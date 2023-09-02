@@ -45,11 +45,11 @@
 
 
 
-class Node
+class Node_
 {
   public:
-    Node (ORB_SLAM2::System::eSensor sensor, ros::NodeHandle &node_handle, image_transport::ImageTransport &image_transport);
-    ~Node ();
+    Node_(ORB_SLAM2::System::eSensor sensor, ros::NodeHandle &node_handle, image_transport::ImageTransport &image_transport);
+    ~Node_();
 
   protected:
     void Update ();

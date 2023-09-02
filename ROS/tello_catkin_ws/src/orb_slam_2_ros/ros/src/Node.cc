@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Node::Node (ORB_SLAM2::System::eSensor sensor, ros::NodeHandle &node_handle, image_transport::ImageTransport &image_transport) {
+Node_::Node_(ORB_SLAM2::System::eSensor sensor, ros::NodeHandle &node_handle, image_transport::ImageTransport &image_transport) {
   name_of_node_ = ros::this_node::getName();
   node_handle_ = node_handle;
   min_observations_per_point_ = 2;
@@ -20,11 +20,11 @@ Node::Node (ORB_SLAM2::System::eSensor sensor, ros::NodeHandle &node_handle, ima
 
   orb_slam_ = new ORB_SLAM2::System (voc_file_name_param_, settings_file_name_param_, sensor, use_viewer_param, map_file_name_param_, load_map_param_);
 
-  service_server_ = node_handle_.advertiseService(name_of_node_+"/save_map", &Node::SaveMapSrv, this);
+  service_server_ = node_handle_.advertiseService(name_of_node_+"/save_map", &Node_::SaveMapSrv, this);
 
   //Setup dynamic reconfigure
   dynamic_reconfigure::Server<orb_slam2_ros::dynamic_reconfigureConfig>::CallbackType dynamic_param_callback;
-  dynamic_param_callback = boost::bind(&Node::ParamsChangedCallback, this, _1, _2);
+  dynamic_param_callback = boost::bind(&Node_::ParamsChangedCallback, this, _1, _2);
   dynamic_param_server_.setCallback(dynamic_param_callback);
 
   rendered_image_publisher_ = image_transport.advertise (name_of_node_+"/debug_image", 1);
@@ -41,7 +41,7 @@ Node::Node (ORB_SLAM2::System::eSensor sensor, ros::NodeHandle &node_handle, ima
 }
 
 
-Node::~Node () {
+Node_::~Node_() {
   // Stop all threads
   orb_slam_->Shutdown();
 
@@ -52,7 +52,7 @@ Node::~Node () {
 }
 
 
-void Node::Update () {
+void Node_::Update () {
   cv::Mat position = orb_slam_->GetCurrentPosition();
 
   if (!position.empty()) {
@@ -72,19 +72,19 @@ void Node::Update () {
 }
 
 
-void Node::PublishMapPoints (std::vector<ORB_SLAM2::MapPoint*> map_points) {
+void Node_::PublishMapPoints (std::vector<ORB_SLAM2::MapPoint*> map_points) {
   sensor_msgs::PointCloud2 cloud = MapPointsToPointCloud (map_points);
   map_points_publisher_.publish (cloud);
 }
 
 
-void Node::PublishPositionAsTransform (cv::Mat position) {
+void Node_::PublishPositionAsTransform (cv::Mat position) {
   tf::Transform transform = TransformFromMat (position);
   static tf::TransformBroadcaster tf_broadcaster;
   tf_broadcaster.sendTransform(tf::StampedTransform(transform, current_frame_time_, map_frame_id_param_, camera_frame_id_param_));
 }
 
-void Node::PublishPositionAsPoseStamped (cv::Mat position) {
+void Node_::PublishPositionAsPoseStamped (cv::Mat position) {
   tf::Transform grasp_tf = TransformFromMat (position);
   tf::Stamped<tf::Pose> grasp_tf_pose(grasp_tf, current_frame_time_, map_frame_id_param_);
   geometry_msgs::PoseStamped pose_msg;
@@ -95,7 +95,7 @@ void Node::PublishPositionAsPoseStamped (cv::Mat position) {
 }
 
 
-void Node::PublishRenderedImage (cv::Mat image) {
+void Node_::PublishRenderedImage (cv::Mat image) {
   std_msgs::Header header;
   header.stamp = current_frame_time_;
   header.frame_id = map_frame_id_param_;
@@ -104,7 +104,7 @@ void Node::PublishRenderedImage (cv::Mat image) {
 }
 
 
-tf::Transform Node::TransformFromMat (cv::Mat position_mat) {
+tf::Transform Node_::TransformFromMat (cv::Mat position_mat) {
   cv::Mat rotation(3,3,CV_32F);
   cv::Mat translation(3,1,CV_32F);
 
@@ -139,7 +139,7 @@ tf::Transform Node::TransformFromMat (cv::Mat position_mat) {
 }
 
 
-sensor_msgs::PointCloud2 Node::MapPointsToPointCloud (std::vector<ORB_SLAM2::MapPoint*> map_points) {
+sensor_msgs::PointCloud2 Node_::MapPointsToPointCloud (std::vector<ORB_SLAM2::MapPoint*> map_points) {
   if (map_points.size() == 0) {
     std::cout << "Map point vector is empty!" << std::endl;
   }
@@ -194,7 +194,7 @@ sensor_msgs::PointCloud2 Node::MapPointsToPointCloud (std::vector<ORB_SLAM2::Map
 }
 
 
-void Node::ParamsChangedCallback(orb_slam2_ros::dynamic_reconfigureConfig &config, uint32_t level) {
+void Node_::ParamsChangedCallback(orb_slam2_ros::dynamic_reconfigureConfig &config, uint32_t level) {
   orb_slam_->EnableLocalizationOnly (config.localize_only);
   min_observations_per_point_ = config.min_observations_for_ros_map;
 
@@ -207,7 +207,7 @@ void Node::ParamsChangedCallback(orb_slam2_ros::dynamic_reconfigureConfig &confi
 }
 
 
-bool Node::SaveMapSrv (orb_slam2_ros::SaveMap::Request &req, orb_slam2_ros::SaveMap::Response &res) {
+bool Node_::SaveMapSrv (orb_slam2_ros::SaveMap::Request &req, orb_slam2_ros::SaveMap::Response &res) {
   res.success = orb_slam_->SaveMap(req.name);
 
   if (res.success) {

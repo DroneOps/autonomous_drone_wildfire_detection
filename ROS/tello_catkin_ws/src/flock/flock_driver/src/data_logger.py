@@ -73,6 +73,6 @@ class DataLogger(object):
 
 if __name__ == '__main__':
     controller = DataLogger()
-    controller.generate_logs("MapperTest.txt")
+    #controller.generate_logs("MapperTest.txt")
 
    
